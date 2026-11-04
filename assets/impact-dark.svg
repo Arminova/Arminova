@@ -1,0 +1,46 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="880" height="586" viewBox="0 0 880 586" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif" role="img" aria-label="Before and after numbers of my TensorFold pull requests">
+  <text x="0" y="22" font-size="20" font-weight="600" fill="#e6edf3">What my TensorFold pull requests changed</text>
+  <text x="0" y="44" font-size="13" fill="#9198a1">Numbers as TensorFold's changelog states them</text>
+  <text x="0" y="82" font-size="17" font-weight="600" fill="#e6edf3">Flash Next on one DGX Spark (GB10)</text>
+  <rect x="0.5" y="98.5" width="281.6666666666667" height="123" rx="10" fill="#161b22" stroke="#30363d"/>
+  <text x="20.0" y="148" font-size="36" font-weight="700" fill="#3fb950">2.4×</text>
+  <text x="20.0" y="174" font-size="15" font-weight="600" fill="#e6edf3">faster server start</text>
+  <text x="20.0" y="198" font-size="13" fill="#9198a1">200 s → 83 s</text>
+  <text x="262.6666666666667" y="198" font-size="13" font-weight="600" text-anchor="end" fill="#4493f8">#1368</text>
+  <rect x="299.1666666666667" y="98.5" width="281.6666666666667" height="123" rx="10" fill="#161b22" stroke="#30363d"/>
+  <text x="318.6666666666667" y="148" font-size="36" font-weight="700" fill="#3fb950">+11.5 %</text>
+  <text x="318.6666666666667" y="174" font-size="15" font-weight="600" fill="#e6edf3">one-stream decode</text>
+  <text x="318.6666666666667" y="198" font-size="13" fill="#9198a1">chat +8.7 % · code +6.3 %</text>
+  <text x="561.3333333333334" y="198" font-size="13" font-weight="600" text-anchor="end" fill="#4493f8">#1786</text>
+  <rect x="597.8333333333334" y="98.5" width="281.6666666666667" height="123" rx="10" fill="#161b22" stroke="#30363d"/>
+  <text x="617.3333333333334" y="148" font-size="36" font-weight="700" fill="#3fb950">+4–5 %</text>
+  <text x="617.3333333333334" y="174" font-size="15" font-weight="600" fill="#e6edf3">cold prompts</text>
+  <text x="617.3333333333334" y="198" font-size="13" fill="#9198a1">less work in every prompt pass</text>
+  <text x="860.0" y="198" font-size="13" font-weight="600" text-anchor="end" fill="#4493f8">#1764</text>
+  <text x="0" y="266" font-size="15" font-weight="600" fill="#e6edf3">Server start with Qwen3.8-Flash-Next-FP4-Local</text>
+  <text x="880" y="266" font-size="13" font-weight="600" text-anchor="end" fill="#4493f8">#1368</text>
+  <text x="0" y="293" font-size="13" fill="#9198a1">before</text>
+  <rect x="70" y="280" width="592.6" height="18" rx="4" fill="#3d444d"/>
+  <text x="670.6" y="294" font-size="13" font-weight="600" fill="#e6edf3">200 s</text>
+  <text x="0" y="319" font-size="13" fill="#9198a1">after</text>
+  <rect x="70" y="306" width="245.9" height="18" rx="4" fill="#3fb950"/>
+  <text x="323.9" y="320" font-size="13" font-weight="600" fill="#e6edf3">83 s</text>
+  <line x1="0" y1="344" x2="880" y2="344" stroke="#30363d"/>
+  <text x="0" y="382" font-size="17" font-weight="600" fill="#e6edf3">Prompt tiles on an M1 Pro Mac: 62× faster</text>
+  <text x="0" y="416" font-size="15" font-weight="600" fill="#e6edf3">A 2,048-row prompt chunk</text>
+  <text x="880" y="416" font-size="13" font-weight="600" text-anchor="end" fill="#4493f8">#1590</text>
+  <text x="0" y="443" font-size="13" fill="#9198a1">before</text>
+  <rect x="70" y="430" width="720.0" height="18" rx="4" fill="#3d444d"/>
+  <text x="798.0" y="444" font-size="13" font-weight="600" fill="#e6edf3">243 s</text>
+  <text x="0" y="469" font-size="13" fill="#9198a1">after</text>
+  <rect x="70" y="456" width="11.6" height="18" rx="4" fill="#3fb950"/>
+  <text x="89.6" y="470" font-size="13" font-weight="600" fill="#e6edf3">3.9 s</text>
+  <text x="0" y="514" font-size="15" font-weight="600" fill="#e6edf3">First token of a cold 930-token prompt</text>
+  <text x="880" y="514" font-size="13" font-weight="600" text-anchor="end" fill="#4493f8">#1590</text>
+  <text x="0" y="541" font-size="13" fill="#9198a1">before</text>
+  <rect x="70" y="528" width="628.1" height="18" rx="4" fill="#3d444d"/>
+  <text x="706.1" y="542" font-size="13" font-weight="600" fill="#e6edf3">212 s</text>
+  <text x="0" y="567" font-size="13" fill="#9198a1">after</text>
+  <rect x="70" y="554" width="5.9" height="18" rx="4" fill="#3fb950"/>
+  <text x="83.9" y="568" font-size="13" font-weight="600" fill="#e6edf3">2.0 s</text>
+</svg>
