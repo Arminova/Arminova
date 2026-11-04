@@ -8,6 +8,8 @@ own. Current focus: NVIDIA DGX Spark (GB10).
 [![Ko-fi](https://img.shields.io/badge/Ko--fi-arminh-FF5E5B?logo=kofi&logoColor=fff)](https://ko-fi.com/arminh)
 
 <picture>
+  <source media="(max-width: 600px) and (prefers-color-scheme: dark)" srcset="assets/impact-mobile-dark.svg">
+  <source media="(max-width: 600px)" srcset="assets/impact-mobile-light.svg">
   <source media="(prefers-color-scheme: dark)" srcset="assets/impact-dark.svg">
   <img alt="What my TensorFold pull requests changed: Flash Next server start 200 s to 83 s, one-stream decode up to 11.5 % faster, cold prompts 4 to 5 % faster; M1 prompt tiles 62 times faster" src="assets/impact-light.svg">
 </picture>
