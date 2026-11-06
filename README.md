@@ -7,15 +7,6 @@ own. Current focus: NVIDIA DGX Spark (GB10).
 [![X](https://img.shields.io/badge/X-@arminxnova-000000?logo=x&logoColor=fff)](https://x.com/arminxnova)
 [![Ko-fi](https://img.shields.io/badge/Ko--fi-arminh-FF5E5B?logo=kofi&logoColor=fff)](https://ko-fi.com/arminh)
 
-<!-- impact:start -->
-<picture>
-  <source media="(max-width: 600px) and (prefers-color-scheme: dark)" srcset="assets/impact-mobile-dark.svg">
-  <source media="(max-width: 600px)" srcset="assets/impact-mobile-light.svg">
-  <source media="(prefers-color-scheme: dark)" srcset="assets/impact-dark.svg">
-  <img alt="What my TensorFold pull requests changed. Qwen3.8-Flash-Next: #1368 2.4× faster server start; #1763 +2 % one-stream decode; #1764 +4–5 % faster cold prompts; #1786 +11.5 % one-stream decode, up to; #2160 +5–6 % 8-stream decode, MLX 4-bit; #1942 +3–6 % 8-stream decode. LFM2.5-24B-A2B: #1590 A 2,048-row prompt chunk 243 s to 3.9 s; #1590 First token of a cold 930-token prompt 212 s to 2.0 s" src="assets/impact-light.svg">
-</picture>
-<!-- impact:end -->
-
 <!-- stats:start -->
 **TensorFold** (upstream: [ashhart/TensorFold](https://github.com/ashhart/TensorFold)): **6** [pull requests merged](https://github.com/ashhart/TensorFold/pulls?q=is%3Apr+is%3Amerged+author%3AArminova) · **4,155** lines added · **9** [commits on main](https://github.com/ashhart/TensorFold/commits/main/?author=Arminova)
 

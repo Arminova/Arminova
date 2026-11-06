@@ -2,12 +2,11 @@
 # Refreshes the profile from data/tensorfold.json and GitHub:
 #   1. pulls the totals (merged PRs, lines added, commits on main) from GitHub into the data file,
 #   2. checks every before -> after against its stated percentage,
-#   3. redraws the four SVGs in assets/ (tools/impact_svg.py),
-#   4. rewrites the blocks of README.md between <!-- name:start --> and <!-- name:end -->,
-#   5. writes TENSORFOLD.md, the page with every pull request's measured gains in full.
+#   3. rewrites the blocks of README.md between <!-- name:start --> and <!-- name:end -->,
+#   4. writes TENSORFOLD.md, the page with every pull request's measured gains in full.
 # Re-running with nothing new changes no file. Needs the GitHub CLI (`gh`), logged in, unless --offline.
 #   python3 tools/refresh.py             refresh everything
-#   python3 tools/refresh.py --offline   redraw and rewrite from the data file only
+#   python3 tools/refresh.py --offline   rewrite from the data file only
 #   python3 tools/refresh.py --check     change nothing; exit 1 if any file would change
 import json
 import os
@@ -16,14 +15,11 @@ import subprocess
 import sys
 
 sys.dont_write_bytecode = True
-sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
-import impact_svg  # noqa: E402
 
-ROOT = impact_svg.ROOT
-DATA = impact_svg.DATA
+ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+DATA = os.path.join(ROOT, "data", "tensorfold.json")
 README = os.path.join(ROOT, "README.md")
 DETAILS = os.path.join(ROOT, "TENSORFOLD.md")
-ASSETS = os.path.join(ROOT, "assets")
 
 
 # ---------- GitHub ----------
@@ -110,9 +106,6 @@ def validate(data):
                         problems.append(f"#{e['pr']} {c['label']}: headline score must be a positive number")
                     if not ("change_text" in c or "before_text" in c):
                         problems.append(f"#{e['pr']} {c['label']}: a headline cell needs change_text or before_text")
-        for pr in m["graphic"]["cards"]:
-            if pr not in {e["pr"] for e in m["entries"]}:
-                problems.append(f"graphic card #{pr} not in model {m['id']}")
     return problems
 
 
@@ -146,18 +139,6 @@ def esc_cell(s):
 
 def pr_link(data, n):
     return f"[#{n}](https://github.com/{data['repo']}/pull/{n})"
-
-
-def block_picture(data):
-    alt = impact_svg.alt_text(data).replace('"', "'")
-    return "\n".join([
-        "<picture>",
-        '  <source media="(max-width: 600px) and (prefers-color-scheme: dark)" srcset="assets/impact-mobile-dark.svg">',
-        '  <source media="(max-width: 600px)" srcset="assets/impact-mobile-light.svg">',
-        '  <source media="(prefers-color-scheme: dark)" srcset="assets/impact-dark.svg">',
-        f'  <img alt="{alt}" src="assets/impact-light.svg">',
-        "</picture>",
-    ])
 
 
 def block_stats(data):
@@ -270,7 +251,7 @@ def block_prs(data):
             f"[my TensorFold pull requests](https://github.com/{data['repo']}/pulls?q=author%3A{data['author']}).")
 
 
-BLOCKS = {"impact": block_picture, "stats": block_stats, "gains": block_gains, "prs": block_prs}
+BLOCKS = {"stats": block_stats, "gains": block_gains, "prs": block_prs}
 
 
 def rewrite_readme(text, data):
@@ -311,8 +292,6 @@ def main():
         sys.exit(2)
 
     outputs = {DATA: dump(data), DETAILS: details_page(data)}
-    for name, text in impact_svg.render_all(data).items():
-        outputs[os.path.join(ASSETS, name)] = text
     with open(README, encoding="utf-8") as f:
         outputs[README] = rewrite_readme(f.read(), data)
 
