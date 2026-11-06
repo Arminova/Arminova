@@ -3,7 +3,8 @@
 #   1. pulls the totals (merged PRs, lines added, commits on main) from GitHub into the data file,
 #   2. checks every before -> after against its stated percentage,
 #   3. redraws the four SVGs in assets/ (tools/impact_svg.py),
-#   4. rewrites the blocks of README.md between <!-- name:start --> and <!-- name:end -->.
+#   4. rewrites the blocks of README.md between <!-- name:start --> and <!-- name:end -->,
+#   5. writes TENSORFOLD.md, the page with every pull request's measured gains in full.
 # Re-running with nothing new changes no file. Needs the GitHub CLI (`gh`), logged in, unless --offline.
 #   python3 tools/refresh.py             refresh everything
 #   python3 tools/refresh.py --offline   redraw and rewrite from the data file only
@@ -21,6 +22,7 @@ import impact_svg  # noqa: E402
 ROOT = impact_svg.ROOT
 DATA = impact_svg.DATA
 README = os.path.join(ROOT, "README.md")
+DETAILS = os.path.join(ROOT, "TENSORFOLD.md")
 ASSETS = os.path.join(ROOT, "assets")
 
 
@@ -49,6 +51,15 @@ def fetch_totals(repo, author):
         "by_pr": by_pr,
         "commit_shas": sorted(shas),
     }
+
+
+# The categories a model's summary shows, in column order. Each model shows at most one figure per category.
+SLOT_NAMES = {
+    "start": "Server start",
+    "decode_1": "One-stream decode",
+    "decode_many": "Many-stream decode",
+    "prompt": "Prompt speed",
+}
 
 
 # ---------- checks ----------
@@ -91,6 +102,14 @@ def validate(data):
                 msg = check_cell(e["pr"], c)
                 if msg:
                     problems.append(msg)
+                h = c.get("headline")
+                if h is not None:
+                    if h.get("slot") not in SLOT_NAMES:
+                        problems.append(f"#{e['pr']} {c['label']}: headline slot must be one of {', '.join(SLOT_NAMES)}")
+                    if not isinstance(h.get("score"), (int, float)) or h["score"] <= 0:
+                        problems.append(f"#{e['pr']} {c['label']}: headline score must be a positive number")
+                    if not ("change_text" in c or "before_text" in c):
+                        problems.append(f"#{e['pr']} {c['label']}: a headline cell needs change_text or before_text")
         for pr in m["graphic"]["cards"]:
             if pr not in {e["pr"] for e in m["entries"]}:
                 problems.append(f"graphic card #{pr} not in model {m['id']}")
@@ -159,9 +178,11 @@ def block_stats(data):
     return "\n".join(lines)
 
 
-def block_gains(data):
+def gains_tables(data, level):
+    """The full per-pull-request tables, one per model. `level` is the heading depth of the section title."""
+    h, sub = "#" * level, "#" * (level + 1)
     out = [
-        "## What my pull requests changed, model by model",
+        f"{h} What my pull requests changed, model by model",
         "",
         "Each row is one pull request, in the order they landed, with the gain the maintainer or I measured for it. "
         "Every number says who measured it and links its source: the maintainer's A/B comment on the pull request, "
@@ -169,7 +190,7 @@ def block_gains(data):
         "The rows are separate before/after runs and do not add up to one total.",
     ]
     for m in data["models"]:
-        out += ["", f"### {m['name']} · {m['subtitle']}", "",
+        out += ["", f"{sub} {m['name']} · {m['subtitle']}", "",
                 f"Checkpoint: `{m['checkpoint']}` unless a row says otherwise.", "",
                 "| Pull request | What it changed | Result | Measured by | Source |",
                 "|---|---|---|---|---|"]
@@ -182,25 +203,71 @@ def block_gains(data):
             src = " · ".join(f"[{s['label']}]({source_url(data, s['url'])})" for s in e["sources"])
             out.append(f"| {pr_link(data, e['pr'])} | {esc_cell(e['what'])} | {res} | {esc_cell(e['measured_text'])} | {src} |")
     out += ["", "† computed from the two stated figures; every other percentage is as the source states it."]
+    return out
+
+
+def headline(model, slot):
+    """The one figure a model's summary shows for a slot: among the cells tagged with that slot, the one with the
+    highest headline score; on a tie, the later pull request in the data file."""
+    best = None
+    for e in model["entries"]:
+        for c in e["cells"]:
+            h = c.get("headline")
+            if h and h["slot"] == slot and (best is None or h["score"] >= best[0]):
+                best = (h["score"], e, c)
+    return best
+
+
+def summary_cell(data, model, slot):
+    best = headline(model, slot)
+    if not best:
+        return "—"
+    _, e, c = best
+    if c.get("change_text"):
+        val = c["change_text"] + ("†" if c.get("derived") else "")
+    else:
+        val = f"{c['before_text']} → {c['after_text']}"
+    who = "maintainer's A/B" if e["measured_by"] == "maintainer" else "own receipt"
+    src = e["sources"][0]
+    return (f"**{esc_cell(val)}**<br><sub>{esc_cell(c['headline']['note'])} · "
+            f"[#{e['pr']}, {who}]({source_url(data, src['url'])})</sub>")
+
+
+def block_gains(data):
+    out = [
+        "## What my pull requests changed, model by model",
+        "",
+        "For each model, the best figure the maintainer or I measured in each category, from a single pull request. "
+        "Every figure says who measured it and links its source. Different pull requests are separate before/after "
+        "runs and do not add up to one total. Every pull request's own numbers are in the "
+        "[details](" + os.path.basename(DETAILS) + ").",
+        "",
+        "| Model | " + " | ".join(SLOT_NAMES.values()) + " |",
+        "|---|" + "---|" * len(SLOT_NAMES),
+    ]
+    derived = False
+    for m in data["models"]:
+        cells = [summary_cell(data, m, slot) for slot in SLOT_NAMES]
+        derived = derived or any("†" in c for c in cells)
+        out.append(f"| **{m['name']}**<br><sub>{esc_cell(m['subtitle'])}</sub> | " + " | ".join(cells) + " |")
+    if derived:
+        out += ["", "† computed from the two stated figures; every other percentage is as the source states it."]
     return "\n".join(out)
 
 
+def details_page(data):
+    out = [
+        "# My TensorFold pull requests: the measured gains in full",
+        "",
+        "[← Back to the profile](README.md)",
+        "",
+    ]
+    return "\n".join(out + gains_tables(data, 2)) + "\n"
+
+
 def block_prs(data):
-    by = data["totals"].get("by_pr", {})
-    out = ["| Pull request | What it does | Status |", "|---|---|---|"]
-    rows = []
-    for p in data["pull_requests"]:
-        n = p["pr"]
-        if p["state"] == "merged":
-            day = by.get(str(n), {}).get("merged", "")
-            status = f"Merged {day}".strip()
-        else:
-            day = p["landed"]
-            ev = " · ".join(f"[{e['label']}]({e['url']})" for e in p["evidence"][:2])
-            status = f"Landed {day}: my commit is on main, but GitHub shows the pull request closed, not merged. {ev}"
-        rows.append((day, n, f"| {pr_link(data, n)} | {esc_cell(p['table_what'])} | {status} |"))
-    rows.sort(key=lambda r: (r[0], r[1]), reverse=True)
-    return "\n".join(out + [r[2] for r in rows])
+    return (f"All of them, open ones included: "
+            f"[my TensorFold pull requests](https://github.com/{data['repo']}/pulls?q=author%3A{data['author']}).")
 
 
 BLOCKS = {"impact": block_picture, "stats": block_stats, "gains": block_gains, "prs": block_prs}
@@ -235,7 +302,7 @@ def main():
         new = [int(n) for n in totals["by_pr"] if int(n) not in known]
         if new:
             print("NEW MERGED PRs without an entry in data/tensorfold.json: " + ", ".join(f"#{n}" for n in new)
-                  + "  -> add their gains and table rows, then re-run", file=sys.stderr)
+                  + "  -> add their pull_requests and models entries, then re-run", file=sys.stderr)
             exit_code = 1
     problems = validate(data)
     for pmsg in problems:
@@ -243,7 +310,7 @@ def main():
     if problems:
         sys.exit(2)
 
-    outputs = {DATA: dump(data)}
+    outputs = {DATA: dump(data), DETAILS: details_page(data)}
     for name, text in impact_svg.render_all(data).items():
         outputs[os.path.join(ASSETS, name)] = text
     with open(README, encoding="utf-8") as f:

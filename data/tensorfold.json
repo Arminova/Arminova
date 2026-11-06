@@ -85,7 +85,12 @@
               "approx": true,
               "change_text": "2.4× faster",
               "change_pct": -58.5,
-              "derived": true
+              "derived": true,
+              "headline": {
+                "slot": "start",
+                "score": 141,
+                "note": "about 200 s → about 83 s"
+              }
             },
             {
               "label": "Maintainer's alternated runs",
@@ -126,7 +131,12 @@
               "unit": "tok/s",
               "change_text": "+2 %",
               "change_pct": 2,
-              "pct_stated": true
+              "pct_stated": true,
+              "headline": {
+                "slot": "decode_1",
+                "score": 2,
+                "note": "code"
+              }
             },
             {
               "label": "Chat, 1 stream",
@@ -144,7 +154,12 @@
               "unit": "tok/s",
               "change_text": "+3 %",
               "change_pct": 3,
-              "pct_stated": true
+              "pct_stated": true,
+              "headline": {
+                "slot": "decode_many",
+                "score": 3,
+                "note": "code, 4 streams"
+              }
             },
             {
               "label": "Chat, 4 streams",
@@ -194,7 +209,12 @@
               "unit": "tok/s",
               "change_text": "+3.5 %",
               "change_pct": 3.5,
-              "pct_stated": true
+              "pct_stated": true,
+              "headline": {
+                "slot": "prompt",
+                "score": 3.5,
+                "note": "cold 2,048-token prompt"
+              }
             },
             {
               "label": "Cold 8,192-token prompt",
@@ -203,7 +223,12 @@
               "unit": "tok/s",
               "change_text": "+4.6 %",
               "change_pct": 4.6,
-              "pct_stated": true
+              "pct_stated": true,
+              "headline": {
+                "slot": "prompt",
+                "score": 4.6,
+                "note": "cold 8,192-token prompt"
+              }
             },
             {
               "label": "Cold 16,384-token prompt",
@@ -212,7 +237,12 @@
               "unit": "tok/s",
               "change_text": "+5.2 %",
               "change_pct": 5.2,
-              "pct_stated": true
+              "pct_stated": true,
+              "headline": {
+                "slot": "prompt",
+                "score": 5.2,
+                "note": "cold 16,384-token prompt"
+              }
             }
           ],
           "notes": [
@@ -245,7 +275,12 @@
               "label": "One-stream decode, best case",
               "change_text": "up to +11.5 %",
               "change_pct": 11.5,
-              "pct_stated": true
+              "pct_stated": true,
+              "headline": {
+                "slot": "decode_1",
+                "score": 11.5,
+                "note": "the maintainer's best case"
+              }
             },
             {
               "label": "Chat, temperature 0",
@@ -304,7 +339,12 @@
               "unit": "tok/s",
               "change_text": "+5.2 %",
               "change_pct": 5.2,
-              "pct_stated": true
+              "pct_stated": true,
+              "headline": {
+                "slot": "decode_many",
+                "score": 5.2,
+                "note": "chat, 8 greedy streams, MLX 4-bit"
+              }
             },
             {
               "label": "Code, 8 greedy streams, MLX 4-bit",
@@ -313,7 +353,12 @@
               "unit": "tok/s",
               "change_text": "+6.4 %",
               "change_pct": 6.4,
-              "pct_stated": true
+              "pct_stated": true,
+              "headline": {
+                "slot": "decode_many",
+                "score": 6.4,
+                "note": "code, 8 greedy streams, MLX 4-bit"
+              }
             },
             {
               "label": "FP4, 8 greedy streams: chat / code",
@@ -348,7 +393,12 @@
           "cells": [
             {
               "label": "Aggregate decode, 8 streams",
-              "change_text": "+3.0 % to +6.3 %"
+              "change_text": "+3.0 % to +6.3 %",
+              "headline": {
+                "slot": "decode_many",
+                "score": 6.3,
+                "note": "8 streams"
+              }
             },
             {
               "label": "4 streams",
@@ -423,7 +473,12 @@
               "unit": "s",
               "change_text": "62× faster",
               "change_pct": -98.4,
-              "derived": true
+              "derived": true,
+              "headline": {
+                "slot": "prompt",
+                "score": 6131,
+                "note": "2,048-row prompt chunk, 243 → 3.9 s"
+              }
             },
             {
               "id": "first",
@@ -433,12 +488,22 @@
               "unit": "s",
               "change_text": "106× faster",
               "change_pct": -99.1,
-              "derived": true
+              "derived": true,
+              "headline": {
+                "slot": "prompt",
+                "score": 10500,
+                "note": "first token of a cold 930-token prompt, 212 → 2.0 s"
+              }
             },
             {
               "label": "16 greedy streams together",
               "before_text": "11–17 tok/s",
-              "after_text": "116–123 tok/s"
+              "after_text": "116–123 tok/s",
+              "headline": {
+                "slot": "decode_many",
+                "score": 582,
+                "note": "16 greedy streams together"
+              }
             }
           ],
           "notes": [
