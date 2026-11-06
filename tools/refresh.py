@@ -1,9 +1,7 @@
 #!/usr/bin/env python3
-# Refreshes the profile from data/tensorfold.json and GitHub:
-#   1. pulls the totals (merged PRs, lines added, commits on main) from GitHub into the data file,
-#   2. checks every before -> after against its stated percentage,
-#   3. rewrites the blocks of README.md between <!-- name:start --> and <!-- name:end -->,
-#   4. writes TENSORFOLD.md, the page with every pull request's measured gains in full.
+# Refreshes the TensorFold totals line of the profile:
+#   1. pulls the totals (merged PRs, lines added, commits on main) from GitHub into data/tensorfold.json,
+#   2. rewrites the block of README.md between <!-- stats:start --> and <!-- stats:end -->.
 # Re-running with nothing new changes no file. Needs the GitHub CLI (`gh`), logged in, unless --offline.
 #   python3 tools/refresh.py             refresh everything
 #   python3 tools/refresh.py --offline   rewrite from the data file only
@@ -19,7 +17,6 @@ sys.dont_write_bytecode = True
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 DATA = os.path.join(ROOT, "data", "tensorfold.json")
 README = os.path.join(ROOT, "README.md")
-DETAILS = os.path.join(ROOT, "TENSORFOLD.md")
 
 
 # ---------- GitHub ----------
@@ -49,97 +46,7 @@ def fetch_totals(repo, author):
     }
 
 
-# The categories a model's summary shows, in column order. Each model shows at most one figure per category.
-SLOT_NAMES = {
-    "start": "Server start",
-    "decode_1": "One-stream decode",
-    "decode_many": "Many-stream decode",
-    "prompt": "Prompt speed",
-}
-
-
-# ---------- checks ----------
-
-def decimals(v):
-    s = repr(float(v))
-    return len(s.split(".")[1]) if "." in s and not s.endswith(".0") else (1 if isinstance(v, float) else 0)
-
-
-def check_cell(pr, c):
-    """The stated percentage must be possible for the printed before and after (they are rounded)."""
-    if "before" not in c or "after" not in c or "change_pct" not in c:
-        return None
-    b, a = float(c["before"]), float(c["after"])
-    hb, ha = 0.5 * 10 ** -decimals(c["before"]), 0.5 * 10 ** -decimals(c["after"])
-    cands = [((a + da) / (b + db) - 1) * 100 for da in (-ha, ha) for db in (-hb, hb)]
-    lo, hi = min(cands), max(cands)
-    s = float(c["change_pct"])
-    # stated as printed: +3.7 % means [3.65, 3.75); +2 % means [1.5, 2.5)
-    d = len(c["change_text"].split(".")[1].split()[0]) if "." in c["change_text"] and c.get("pct_stated") else 0
-    half = 0.5 * 10 ** -d if c.get("pct_stated") else 0.05
-    if hi < s - half or lo > s + half:
-        return f"#{pr} {c['label']}: {c['before']} -> {c['after']} gives {lo:.2f} to {hi:.2f} %, data says {s} %"
-    return None
-
-
-def validate(data):
-    problems = []
-    seen = {p["pr"] for p in data["pull_requests"]}
-    for m in data["models"]:
-        for e in m["entries"]:
-            if e["pr"] not in seen:
-                problems.append(f"#{e['pr']} has gains but is missing from pull_requests")
-            if e["measured_by"] not in ("maintainer", "own"):
-                problems.append(f"#{e['pr']}: measured_by must be maintainer or own")
-            for s in e["sources"]:
-                if not s["url"].startswith(("http", "L")):
-                    problems.append(f"#{e['pr']}: bad source {s['url']}")
-            for c in e["cells"]:
-                msg = check_cell(e["pr"], c)
-                if msg:
-                    problems.append(msg)
-                h = c.get("headline")
-                if h is not None:
-                    if h.get("slot") not in SLOT_NAMES:
-                        problems.append(f"#{e['pr']} {c['label']}: headline slot must be one of {', '.join(SLOT_NAMES)}")
-                    if not isinstance(h.get("score"), (int, float)) or h["score"] <= 0:
-                        problems.append(f"#{e['pr']} {c['label']}: headline score must be a positive number")
-                    if not ("change_text" in c or "before_text" in c):
-                        problems.append(f"#{e['pr']} {c['label']}: a headline cell needs change_text or before_text")
-    return problems
-
-
 # ---------- README blocks ----------
-
-def source_url(data, u):
-    return f"{data['changelog']}#{u}" if u.startswith("L") else u
-
-
-def fmt_cell(c):
-    lab = c["label"]
-    if "before" in c and "after" in c:
-        if c.get("approx"):
-            txt = f"{lab}: about {c['before']:,} {c['unit']} → about {c['after']:,} {c['unit']}"
-        else:
-            txt = f"{lab}: {c['before']:,} → {c['after']:,} {c['unit']}"
-    elif "before_text" in c:
-        txt = f"{lab}: {c['before_text']} → {c['after_text']}"
-    else:
-        txt = f"{lab}"
-    ch = c.get("change_text")
-    if ch:
-        dag = "†" if c.get("derived") else ""
-        txt += f" ({ch}{dag})" if ("before" in c or "before_text" in c) else f": {ch}{dag}"
-    return txt
-
-
-def esc_cell(s):
-    return s.replace("|", "\\|")
-
-
-def pr_link(data, n):
-    return f"[#{n}](https://github.com/{data['repo']}/pull/{n})"
-
 
 def block_stats(data):
     t = data["totals"]
@@ -159,99 +66,7 @@ def block_stats(data):
     return "\n".join(lines)
 
 
-def gains_tables(data, level):
-    """The full per-pull-request tables, one per model. `level` is the heading depth of the section title."""
-    h, sub = "#" * level, "#" * (level + 1)
-    out = [
-        f"{h} What my pull requests changed, model by model",
-        "",
-        "Each row is one pull request, in the order they landed, with the gain the maintainer or I measured for it. "
-        "Every number says who measured it and links its source: the maintainer's A/B comment on the pull request, "
-        "[TensorFold's changelog](" + data["changelog"] + "), or my own receipt in the pull request description. "
-        "The rows are separate before/after runs and do not add up to one total.",
-    ]
-    for m in data["models"]:
-        out += ["", f"{sub} {m['name']} · {m['subtitle']}", "",
-                f"Checkpoint: `{m['checkpoint']}` unless a row says otherwise.", "",
-                "| Pull request | What it changed | Result | Measured by | Source |",
-                "|---|---|---|---|---|"]
-        for e in m["entries"]:
-            res = "<br>".join(esc_cell(fmt_cell(c)) for c in e["cells"])
-            if e.get("checkpoint"):
-                res = f"{esc_cell(e['checkpoint'])}<br>" + res
-            if e["notes"]:
-                res += "<br><sub>" + esc_cell(" ".join(e["notes"])) + "</sub>"
-            src = " · ".join(f"[{s['label']}]({source_url(data, s['url'])})" for s in e["sources"])
-            out.append(f"| {pr_link(data, e['pr'])} | {esc_cell(e['what'])} | {res} | {esc_cell(e['measured_text'])} | {src} |")
-    out += ["", "† computed from the two stated figures; every other percentage is as the source states it."]
-    return out
-
-
-def headline(model, slot):
-    """The one figure a model's summary shows for a slot: among the cells tagged with that slot, the one with the
-    highest headline score; on a tie, the later pull request in the data file."""
-    best = None
-    for e in model["entries"]:
-        for c in e["cells"]:
-            h = c.get("headline")
-            if h and h["slot"] == slot and (best is None or h["score"] >= best[0]):
-                best = (h["score"], e, c)
-    return best
-
-
-def summary_cell(data, model, slot):
-    best = headline(model, slot)
-    if not best:
-        return "—"
-    _, e, c = best
-    if c.get("change_text"):
-        val = c["change_text"] + ("†" if c.get("derived") else "")
-    else:
-        val = f"{c['before_text']} → {c['after_text']}"
-    who = "maintainer's A/B" if e["measured_by"] == "maintainer" else "own receipt"
-    src = e["sources"][0]
-    return (f"**{esc_cell(val)}**<br><sub>{esc_cell(c['headline']['note'])} · "
-            f"[#{e['pr']}, {who}]({source_url(data, src['url'])})</sub>")
-
-
-def block_gains(data):
-    out = [
-        "## What my pull requests changed, model by model",
-        "",
-        "For each model, the best figure the maintainer or I measured in each category, from a single pull request. "
-        "Every figure says who measured it and links its source. Different pull requests are separate before/after "
-        "runs and do not add up to one total. Every pull request's own numbers are in the "
-        "[details](" + os.path.basename(DETAILS) + ").",
-        "",
-        "| Model | " + " | ".join(SLOT_NAMES.values()) + " |",
-        "|---|" + "---|" * len(SLOT_NAMES),
-    ]
-    derived = False
-    for m in data["models"]:
-        cells = [summary_cell(data, m, slot) for slot in SLOT_NAMES]
-        derived = derived or any("†" in c for c in cells)
-        out.append(f"| **{m['name']}**<br><sub>{esc_cell(m['subtitle'])}</sub> | " + " | ".join(cells) + " |")
-    if derived:
-        out += ["", "† computed from the two stated figures; every other percentage is as the source states it."]
-    return "\n".join(out)
-
-
-def details_page(data):
-    out = [
-        "# My TensorFold pull requests: the measured gains in full",
-        "",
-        "[← Back to the profile](README.md)",
-        "",
-    ]
-    return "\n".join(out + gains_tables(data, 2)) + "\n"
-
-
-def block_prs(data):
-    return (f"All of them, open ones included: "
-            f"[my TensorFold pull requests](https://github.com/{data['repo']}/pulls?q=author%3A{data['author']}).")
-
-
-BLOCKS = {"stats": block_stats, "gains": block_gains, "prs": block_prs}
+BLOCKS = {"stats": block_stats}
 
 
 def rewrite_readme(text, data):
@@ -279,19 +94,7 @@ def main():
     if not offline:
         totals = fetch_totals(data["repo"], data["author"])
         data["totals"] = totals
-        known = {p["pr"] for p in data["pull_requests"]}
-        new = [int(n) for n in totals["by_pr"] if int(n) not in known]
-        if new:
-            print("NEW MERGED PRs without an entry in data/tensorfold.json: " + ", ".join(f"#{n}" for n in new)
-                  + "  -> add their pull_requests and models entries, then re-run", file=sys.stderr)
-            exit_code = 1
-    problems = validate(data)
-    for pmsg in problems:
-        print("DATA PROBLEM:", pmsg, file=sys.stderr)
-    if problems:
-        sys.exit(2)
-
-    outputs = {DATA: dump(data), DETAILS: details_page(data)}
+    outputs = {DATA: dump(data)}
     with open(README, encoding="utf-8") as f:
         outputs[README] = rewrite_readme(f.read(), data)
 

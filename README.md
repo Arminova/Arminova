@@ -13,19 +13,6 @@ own. Current focus: NVIDIA DGX Spark (GB10).
 <sub>Counted from GitHub by [tools/refresh.py](tools/refresh.py). Pull requests: those GitHub shows as merged. Lines added: the sum of those pull requests' additions. Commits: authored by me on TensorFold's main branch; that includes #1368 and #268, which landed as my commits while GitHub shows their pull requests closed.</sub>
 <!-- stats:end -->
 
-<!-- gains:start -->
-## What my pull requests changed, model by model
-
-For each model, the best figure the maintainer or I measured in each category, from a single pull request. Every figure says who measured it and links its source. Different pull requests are separate before/after runs and do not add up to one total. Every pull request's own numbers are in the [details](TENSORFOLD.md).
-
-| Model | Server start | One-stream decode | Many-stream decode | Prompt speed |
-|---|---|---|---|---|
-| **Qwen3.8-Flash-Next**<br><sub>CUDA engine, one GB10 (the chip in the NVIDIA DGX Spark)</sub> | **2.4× faster†**<br><sub>about 200 s → about 83 s · [#1368, maintainer's A/B](https://github.com/ashhart/TensorFold/pull/1368#issuecomment-6450647092)</sub> | **up to +11.5 %**<br><sub>the maintainer's best case · [#1786, maintainer's A/B](https://github.com/ashhart/TensorFold/pull/1786#issuecomment-6622991893)</sub> | **+6.4 %**<br><sub>code, 8 greedy streams, MLX 4-bit · [#2160, maintainer's A/B](https://github.com/ashhart/TensorFold/pull/2160#issuecomment-6646355107)</sub> | **+5.2 %**<br><sub>cold 16,384-token prompt · [#1764, maintainer's A/B](https://github.com/ashhart/TensorFold/pull/1764#issuecomment-6581126349)</sub> |
-| **LFM2.5-24B-A2B**<br><sub>Metal engine, Apple M1 and M2 Macs (measured on an M1 Pro)</sub> | — | — | **11–17 tok/s → 116–123 tok/s**<br><sub>16 greedy streams together · [#1590, own receipt](https://github.com/ashhart/TensorFold/pull/1590)</sub> | **106× faster†**<br><sub>first token of a cold 930-token prompt, 212 → 2.0 s · [#1590, own receipt](https://github.com/ashhart/TensorFold/pull/1590)</sub> |
-
-† computed from the two stated figures; every other percentage is as the source states it.
-<!-- gains:end -->
-
 ## Recipes for one DGX Spark
 
 | Recipe | What it is |
@@ -43,9 +30,7 @@ For each model, the best figure the maintainer or I measured in each category, f
 
 ## Contributions to [TensorFold](https://github.com/ashhart/TensorFold)
 
-<!-- prs:start -->
 All of them, open ones included: [my TensorFold pull requests](https://github.com/ashhart/TensorFold/pulls?q=author%3AArminova).
-<!-- prs:end -->
 
 More projects and tools will appear here as I open-source them.
 
