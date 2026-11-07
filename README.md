@@ -7,12 +7,6 @@ own. Current focus: NVIDIA DGX Spark (GB10).
 [![X](https://img.shields.io/badge/X-@arminxnova-000000?logo=x&logoColor=fff)](https://x.com/arminxnova)
 [![Ko-fi](https://img.shields.io/badge/Ko--fi-arminh-FF5E5B?logo=kofi&logoColor=fff)](https://ko-fi.com/arminh)
 
-<!-- stats:start -->
-**TensorFold** (upstream: [ashhart/TensorFold](https://github.com/ashhart/TensorFold)): **6** [pull requests merged](https://github.com/ashhart/TensorFold/pulls?q=is%3Apr+is%3Amerged+author%3AArminova) · **4,155** lines added · **9** [commits on main](https://github.com/ashhart/TensorFold/commits/main/?author=Arminova)
-
-<sub>Counted from GitHub by [tools/refresh.py](tools/refresh.py). Pull requests: those GitHub shows as merged. Lines added: the sum of those pull requests' additions. Commits: authored by me on TensorFold's main branch; that includes #1368 and #268, which landed as my commits while GitHub shows their pull requests closed.</sub>
-<!-- stats:end -->
-
 ## Recipes for one DGX Spark
 
 | Recipe | What it is |
